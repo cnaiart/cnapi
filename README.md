@@ -113,7 +113,39 @@ docker-compose pull && docker-compose up -d
 > 
 > 点击链接加入群聊：https://qm.qq.com/q/QFibUxMPEQ
 
+```
+version: '3.4'
 
+services:
+  voapi:
+    image: licoy/voapi:latest
+    container_name: voapi
+    restart: always
+    command: --log-dir /app/logs
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    environment:
+      - SQL_DSN=voapi:voapi@tcp(你的IP地址:3306)/voapi  # 修改此行，或注释掉以使用 SQLite 作为数据库
+      - REDIS_CONN_STRING=redis://redis
+      - SESSION_SECRET=****  # 启动前必须手动修改此值为随机字符串
+      - TZ=Asia/Shanghai
+
+    depends_on:
+      - redis
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' | awk -F: '{print $2}'" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+````````
 
 ## 界面截图
 ### PC端
